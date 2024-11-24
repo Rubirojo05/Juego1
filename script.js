@@ -111,7 +111,10 @@ function girarCarretes() {
     }
     saldo -= 50;
     actualizarSaldo();
-    agregarJugador(user.displayName || "Anónimo", saldo);
+
+    // Cambia user.displayName por el nombre personalizado del usuario
+    const nombreUsuario = document.getElementById('nombreUsuario').value.trim() || user.displayName || "Anónimo";
+    agregarJugador(nombreUsuario, saldo);
 
     botonGirar.disabled = true;
     mensaje.textContent = "Girando...";
