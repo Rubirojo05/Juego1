@@ -1,6 +1,6 @@
 // Firebase Configuración
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, limit, getDoc, setDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"; // Añadir getDocs
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -161,7 +161,7 @@ function checkNameChangeAvailability() {
         const lastChangeDate = new Date(lastNameChange);
         const timeDifference = now - lastChangeDate;
         const hoursDifference = timeDifference / (1000 * 60 * 60);
-        if (hoursDifference < 24) {
+        if (hoursDifference < 24 && saldo < 1000) {
             document.querySelector('.cambiar-nombre').style.display = 'none';
         }
     }
@@ -174,9 +174,21 @@ document.getElementById('botonGirar').addEventListener('click', girarCarretes);
 document.getElementById('botonCambiarNombre').addEventListener('click', () => {
     const nuevoNombre = document.getElementById('nombreUsuario').value.trim();
     if (nuevoNombre) {
-        agregarJugador(nuevoNombre, saldo);
-        localStorage.setItem('lastNameChange', new Date().toISOString());
-        document.querySelector('.cambiar-nombre').style.display = 'none';
+        const now = new Date();
+        const lastChangeDate = new Date(lastNameChange);
+        const timeDifference = now - lastChangeDate;
+        const hoursDifference = timeDifference / (1000 * 60 * 60);
+        if (hoursDifference >= 24 || saldo >= 1000) {
+            if (hoursDifference < 24 && saldo >= 1000) {
+                saldo -= 1000;
+                actualizarSaldo();
+            }
+            agregarJugador(nuevoNombre, saldo);
+            localStorage.setItem('lastNameChange', new Date().toISOString());
+            document.querySelector('.cambiar-nombre').style.display = 'none';
+        } else {
+            mostrarAviso('Debes esperar 24 horas o tener 1.000€ para cambiar el nombre.');
+        }
     } else {
         mostrarAviso('Por favor, introduce un nombre válido.');
     }
