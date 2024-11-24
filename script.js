@@ -79,6 +79,11 @@ async function agregarJugador(nombre, saldo) {
     }
 }
 
+// Función para obtener un símbolo aleatorio
+function obtenerSimboloAleatorio() {
+    return simbolos[Math.floor(Math.random() * simbolos.length)];
+}
+
 // Girar los carretes
 function girarCarretes() {
     if (saldo <= 0) {
@@ -88,6 +93,21 @@ function girarCarretes() {
     saldo -= 50;
     actualizarSaldo();
     agregarJugador("Usuario", saldo);
+
+    botonGirar.disabled = true;
+    mensaje.textContent = "Girando...";
+    let giros = 20;
+    let intervalo = setInterval(() => {
+        carrete1.textContent = obtenerSimboloAleatorio();
+        carrete2.textContent = obtenerSimboloAleatorio();
+        carrete3.textContent = obtenerSimboloAleatorio();
+        giros--;
+        if (giros === 0) {
+            clearInterval(intervalo);
+            determinarResultado();
+            botonGirar.disabled = saldo <= 0;
+        }
+    }, 100);
 }
 
 // Mostrar aviso

@@ -132,15 +132,20 @@ body {
 
 /* Estilo para el ranking */
 .ranking {
-    margin-top: 20px;
-    font-size: 1.2em;
-    color: #fff;
-    max-width: 400px;
-    margin: 0 auto;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .ranking div {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     font-size: 1.1em;
 }
 
@@ -157,7 +162,6 @@ body {
     border: none;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    display: none;
 }
 
 #botonCambiarNombre {
@@ -171,7 +175,6 @@ body {
     cursor: pointer;
     box-shadow: 0 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
-    display: none;
 }
 
 #botonCambiarNombre:hover {
