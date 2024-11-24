@@ -1,3 +1,4 @@
+/* Estilos generales */
 body {
     margin: 0;
     padding: 0;
@@ -6,7 +7,6 @@ body {
     color: #fff;
     text-align: center;
     overflow: hidden;
-    /* Eliminar el scroll */
 }
 
 .contenedor {
@@ -29,6 +29,7 @@ body {
     font-weight: bold;
 }
 
+/* Estilo para los carretes y el área del slot */
 .slot-maquina {
     display: flex;
     justify-content: space-between;
@@ -56,6 +57,7 @@ body {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
 }
 
+/* Estilos para los mensajes */
 .mensaje {
     margin-top: 20px;
     font-size: 1.3em;
@@ -84,6 +86,23 @@ body {
     opacity: 1;
 }
 
+/* Estilo para los botones */
+.boton-google {
+    background-color: #4285F4;
+    color: white;
+    font-size: 16px;
+    padding: 12px 30px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 20px;  /* Separar el botón de girar */
+}
+
+.boton-google:hover {
+    background-color: #357AE8;
+}
+
 .boton-girar {
     margin-top: 20px;
     padding: 12px 25px;
@@ -96,6 +115,7 @@ body {
     cursor: pointer;
     box-shadow: 0 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
 }
 
 .boton-girar:hover {
@@ -112,20 +132,15 @@ body {
 
 /* Estilo para el ranking */
 .ranking {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    max-width: 300px;
-    max-height: 400px;
-    overflow-y: auto;
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #fff;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
 .ranking div {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     font-size: 1.1em;
 }
 
@@ -142,6 +157,7 @@ body {
     border: none;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    display: none;
 }
 
 #botonCambiarNombre {
@@ -155,6 +171,7 @@ body {
     cursor: pointer;
     box-shadow: 0 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
+    display: none;
 }
 
 #botonCambiarNombre:hover {
@@ -192,6 +209,10 @@ body {
     .boton-girar {
         padding: 10px 20px;
         font-size: 1.1em;
+    }
+
+    .boton-google {
+        margin-bottom: 10px;
     }
 }
 

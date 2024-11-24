@@ -1,144 +1,112 @@
-//FIREBASE
+// Firebase Configuración
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyD2KJ0N0FksQJl658h-HdvkAO8CsLue1vw",
     authDomain: "juego1-ca38d.firebaseapp.com",
     projectId: "juego1-ca38d",
-    storageBucket: "juego1-ca38d.firebasestorage.app",
+    storageBucket: "juego1-ca38d.appspot.com",
     messagingSenderId: "416427181010",
     appId: "1:416427181010:web:eb9f244b8a504f6c713e0b",
     measurementId: "G-60ZB046P0X"
 };
 
-// Inicializar Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
 // Variables globales
-const carrete1 = document.getElementById('carrete1');
-const carrete2 = document.getElementById('carrete2');
-const carrete3 = document.getElementById('carrete3');
-const botonGirar = document.getElementById('botonGirar');
-const mensaje = document.getElementById('mensaje');
-const saldoElemento = document.getElementById('saldo');
-const rankingContainer = document.getElementById('ranking');
-const aviso = document.getElementById('aviso');
+let userId = null;
+let saldo = 1000;
 
-const simbolos = ['💎', '👑', '💰', '🏆', '⭐', '🎲'];
+// Iniciar sesión con Google
+document.getElementById('botonLogin').addEventListener('click', async () => {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        console.log("Usuario autenticado:", user.displayName, user.email);
 
-// Cargar el saldo desde el almacenamiento de sesión
-let saldo = sessionStorage.getItem('saldo') ? parseInt(sessionStorage.getItem('saldo')) : 1000;
-actualizarSaldo();
+        userId = user.uid;
+        await agregarJugador(user.displayName || "Anónimo", saldo);
+        obtenerRanking();
+    } catch (error) {
+        console.error("Error al iniciar sesión con Google:", error);
+    }
+});
 
-// Función para obtener un símbolo aleatorio
-function obtenerSimboloAleatorio() {
-    return simbolos[Math.floor(Math.random() * simbolos.length)];
+// Actualizar saldo
+function actualizarSaldo() {
+    const saldoElemento = document.getElementById('saldo');
+    saldoElemento.textContent = `Saldo: ${saldo}€`;
+    document.getElementById('botonGirar').disabled = saldo <= 0;
 }
 
-// Función para girar los carretes
+// Obtener ranking
+async function obtenerRanking() {
+    const rankingContainer = document.getElementById('ranking');
+    const q = query(collection(db, "ranking"), orderBy("saldo", "desc"), limit(5));
+    const querySnapshot = await getDocs(q);
+
+    rankingContainer.innerHTML = '';
+    let posicion = 1;
+    querySnapshot.forEach((doc) => {
+        const jugador = doc.data();
+        if (jugador.nombre && jugador.saldo !== undefined) {
+            const div = document.createElement('div');
+            div.textContent = `${posicion}. ${jugador.nombre}: ${jugador.saldo}€`;
+            rankingContainer.appendChild(div);
+            posicion++;
+        }
+    });
+}
+
+// Agregar jugador al ranking
+async function agregarJugador(nombre, saldo) {
+    if (!nombre || nombre.trim() === "") {
+        mostrarAviso("Por favor, introduce un nombre válido.");
+        return;
+    }
+
+    try {
+        await setDoc(doc(db, "ranking", userId), { nombre, saldo }, { merge: true });
+        console.log("Jugador actualizado:", { nombre, saldo });
+        obtenerRanking();
+    } catch (error) {
+        console.error("Error al guardar el jugador:", error);
+    }
+}
+
+// Girar los carretes
 function girarCarretes() {
     if (saldo <= 0) {
         mostrarAviso("Saldo insuficiente. Recarga para seguir jugando.");
         return;
     }
-    botonGirar.disabled = true;
-    mensaje.textContent = "Girando...";
-    let giros = 20;
-    let intervalo = setInterval(() => {
-        carrete1.textContent = obtenerSimboloAleatorio();
-        carrete2.textContent = obtenerSimboloAleatorio();
-        carrete3.textContent = obtenerSimboloAleatorio();
-        giros--;
-        if (giros === 0) {
-            clearInterval(intervalo);
-            determinarResultado();
-            botonGirar.disabled = saldo <= 0;
-        }
-    }, 100);
-}
-
-// Función para determinar el resultado
-function determinarResultado() {
-    const resultado1 = carrete1.textContent;
-    const resultado2 = carrete2.textContent;
-    const resultado3 = carrete3.textContent;
-
-    if (resultado1 === resultado2 && resultado2 === resultado3) {
-        saldo += 500;
-        mensaje.textContent = "🎉 ¡Jackpot! ¡Has ganado 500€!";
-        mensaje.style.color = "#d4af37";
-    } else {
-        saldo -= 50;
-        mensaje.textContent = "💔 No has ganado esta vez.";
-        mensaje.style.color = "#fff";
-    }
-
-    sessionStorage.setItem('saldo', saldo);
+    saldo -= 50;
     actualizarSaldo();
-    actualizarRanking();
+    agregarJugador("Usuario", saldo);
 }
 
-// Función para actualizar el saldo en pantalla
-function actualizarSaldo() {
-    saldoElemento.textContent = `Saldo: ${saldo}€`;
-    botonGirar.disabled = saldo <= 0;
-}
-
-// Función para mostrar el aviso de saldo insuficiente
+// Mostrar aviso
 function mostrarAviso(texto) {
+    const aviso = document.getElementById('aviso');
     aviso.textContent = texto;
     aviso.classList.add("mostrar");
-    setTimeout(() => {
-        aviso.classList.remove("mostrar");
-    }, 3000);
+    setTimeout(() => aviso.classList.remove("mostrar"), 3000);
 }
 
-// Función para obtener y mostrar el ranking
-function obtenerRanking() {
-    db.collection("ranking")
-        .orderBy("saldo", "desc")
-        .limit(5)
-        .get()
-        .then((querySnapshot) => {
-            rankingContainer.innerHTML = ''; // Limpiar el ranking
-            querySnapshot.forEach((doc) => {
-                const jugador = doc.data();
-                const div = document.createElement('div');
-                div.textContent = `${jugador.nombre}: ${jugador.saldo}€`;
-                rankingContainer.appendChild(div);
-            });
-        })
-        .catch((error) => {
-            console.error("Error obteniendo el ranking: ", error);
-        });
-}
+// Evento de girar
+document.getElementById('botonGirar').addEventListener('click', girarCarretes);
 
-// Función para agregar un jugador al ranking
-function agregarJugador(nombre, saldo) {
-    const docRef = db.collection("ranking").doc(nombre);
-    docRef.set({
-        nombre: nombre,
-        saldo: saldo
-    }, { merge: true })
-    .then(() => {
-        console.log("Jugador agregado/actualizado");
-        obtenerRanking();
-    })
-    .catch((error) => {
-        console.error("Error agregando/actualizando jugador: ", error);
-    });
-}
-
-// Cargar el ranking al cargar la página
-document.addEventListener('DOMContentLoaded', obtenerRanking);
-
-// Vincular el evento de clic al botón "Girar"
-botonGirar.addEventListener('click', girarCarretes);
+// Cambiar nombre
+document.getElementById('botonCambiarNombre').addEventListener('click', () => {
+    const nuevoNombre = document.getElementById('nombreUsuario').value.trim();
+    if (nuevoNombre) {
+        agregarJugador(nuevoNombre, saldo);
+    } else {
+        mostrarAviso('Por favor, introduce un nombre válido.');
+    }
+});
