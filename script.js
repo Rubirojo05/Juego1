@@ -1,6 +1,6 @@
 // Firebase Configuración
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, limit, getDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -24,6 +24,9 @@ let saldo = 1000;
 let lastNameChange = null;
 let user = null;
 
+// Desactivar botón de girar antes de iniciar sesión
+document.getElementById('botonGirar').disabled = true;
+
 // Iniciar sesión con Google
 document.getElementById('botonLogin').addEventListener('click', async () => {
     try {
@@ -32,10 +35,19 @@ document.getElementById('botonLogin').addEventListener('click', async () => {
         console.log("Usuario autenticado:", user.displayName, user.email);
 
         userId = user.uid;
-        await agregarJugador(user.displayName || "Anónimo", saldo);
+        const userDoc = await getDoc(doc(db, "ranking", userId));
+        if (userDoc.exists()) {
+            saldo = userDoc.data().saldo;
+        } else {
+            await agregarJugador(user.displayName || "Anónimo", saldo);
+        }
+        
+        actualizarSaldo();
         obtenerRanking();
         document.getElementById('botonLogin').style.display = 'none';
         document.querySelector('.cambiar-nombre').style.display = 'block';
+        document.getElementById('botonGirar').disabled = false;
+
         lastNameChange = localStorage.getItem('lastNameChange') || null;
         checkNameChangeAvailability();
     } catch (error) {
