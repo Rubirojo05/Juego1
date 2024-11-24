@@ -23,6 +23,7 @@ let userId = null;
 let saldo = 1000;
 let lastNameChange = null;
 let user = null;
+let nombreUsuario = null; // Añadir esta variable
 
 // Desactivar botón de girar antes de iniciar sesión
 document.getElementById('botonGirar').disabled = true;
@@ -112,9 +113,8 @@ function girarCarretes() {
     saldo -= 50;
     actualizarSaldo();
 
-    // Cambia user.displayName por el nombre personalizado del usuario
-    const nombreUsuario = document.getElementById('nombreUsuario').value.trim() || user.displayName || "Anónimo";
-    agregarJugador(nombreUsuario, saldo);
+    // Utiliza la variable nombreUsuario
+    agregarJugador(nombreUsuario || user.displayName || "Anónimo", saldo);
 
     botonGirar.disabled = true;
     mensaje.textContent = "Girando...";
@@ -175,8 +175,8 @@ document.getElementById('botonGirar').addEventListener('click', girarCarretes);
 
 // Cambiar nombre
 document.getElementById('botonCambiarNombre').addEventListener('click', () => {
-    const nuevoNombre = document.getElementById('nombreUsuario').value.trim();
-    if (nuevoNombre) {
+    nombreUsuario = document.getElementById('nombreUsuario').value.trim(); // Actualiza la variable nombreUsuario
+    if (nombreUsuario) {
         const now = new Date();
         const lastChangeDate = new Date(lastNameChange);
         const timeDifference = now - lastChangeDate;
@@ -186,7 +186,7 @@ document.getElementById('botonCambiarNombre').addEventListener('click', () => {
                 saldo -= 1000;
                 actualizarSaldo();
             }
-            agregarJugador(nuevoNombre, saldo);
+            agregarJugador(nombreUsuario, saldo);
             localStorage.setItem('lastNameChange', new Date().toISOString());
             document.querySelector('.cambiar-nombre').style.display = 'none';
         } else {
