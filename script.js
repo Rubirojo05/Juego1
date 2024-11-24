@@ -43,6 +43,7 @@ document.getElementById('botonLogin').addEventListener('click', async () => {
             await agregarJugador(user.displayName || "Anónimo", saldo);
         }
         
+        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName; // Recupera el nombre personalizado
         actualizarSaldo();
         obtenerRanking();
         document.getElementById('botonLogin').style.display = 'none';
@@ -188,6 +189,7 @@ document.getElementById('botonCambiarNombre').addEventListener('click', () => {
             }
             agregarJugador(nombreUsuario, saldo);
             localStorage.setItem('lastNameChange', new Date().toISOString());
+            localStorage.setItem('nombreUsuario', nombreUsuario); // Almacena el nombre personalizado
             document.querySelector('.cambiar-nombre').style.display = 'none';
         } else {
             mostrarAviso('Debes esperar 24 horas o tener 1.000€ para cambiar el nombre.');
