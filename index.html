@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máquina Tragaperras de Lujo</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Agregar Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="contenedor">
+        <header class="encabezado">
+            <h1 class="titulo">Máquina Tragaperras de Lujo</h1>
+        </header>
+        <div class="slot-maquina">
+            <div class="carrete" id="carrete1"></div>
+            <div class="carrete" id="carrete2"></div>
+            <div class="carrete" id="carrete3"></div>
+        </div>
+        <div class="mensaje" id="mensaje">¡Presiona "Girar" para comenzar!</div>
+        <div class="saldo" id="saldo"></div>
+        <!-- Contenedor del ranking en la esquina superior derecha -->
+        <div id="ranking" class="ranking">
+            <!-- Ranking se actualizará aquí -->
+        </div>
+        <div class="aviso" id="aviso"></div>
+        <button id="botonGirar" class="boton-girar">Girar</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
