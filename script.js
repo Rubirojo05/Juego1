@@ -21,6 +21,7 @@ const provider = new GoogleAuthProvider();
 // Variables globales
 let userId = null;
 let saldo = 1000;
+let lastNameChange = null;
 
 // Iniciar sesión con Google
 document.getElementById('botonLogin').addEventListener('click', async () => {
@@ -32,6 +33,10 @@ document.getElementById('botonLogin').addEventListener('click', async () => {
         userId = user.uid;
         await agregarJugador(user.displayName || "Anónimo", saldo);
         obtenerRanking();
+        document.getElementById('botonLogin').style.display = 'none';
+        document.querySelector('.cambiar-nombre').style.display = 'block';
+        lastNameChange = localStorage.getItem('lastNameChange') || null;
+        checkNameChangeAvailability();
     } catch (error) {
         console.error("Error al iniciar sesión con Google:", error);
     }
@@ -81,6 +86,7 @@ async function agregarJugador(nombre, saldo) {
 
 // Función para obtener un símbolo aleatorio
 function obtenerSimboloAleatorio() {
+    const simbolos = ['🍒', '🍋', '🍊', '🍉', '🔔', '⭐'];
     return simbolos[Math.floor(Math.random() * simbolos.length)];
 }
 
@@ -110,12 +116,41 @@ function girarCarretes() {
     }, 100);
 }
 
+// Determinar resultado de los carretes
+function determinarResultado() {
+    const simbolo1 = carrete1.textContent;
+    const simbolo2 = carrete2.textContent;
+    const simbolo3 = carrete3.textContent;
+
+    if (simbolo1 === simbolo2 && simbolo2 === simbolo3) {
+        const premio = 200;
+        saldo += premio;
+        mostrarAviso(`¡Felicidades! Ganaste ${premio}€`);
+    } else {
+        mostrarAviso("¡Inténtalo de nuevo!");
+    }
+    actualizarSaldo();
+}
+
 // Mostrar aviso
 function mostrarAviso(texto) {
     const aviso = document.getElementById('aviso');
     aviso.textContent = texto;
     aviso.classList.add("mostrar");
     setTimeout(() => aviso.classList.remove("mostrar"), 3000);
+}
+
+// Verificar disponibilidad de cambio de nombre
+function checkNameChangeAvailability() {
+    const now = new Date();
+    if (lastNameChange) {
+        const lastChangeDate = new Date(lastNameChange);
+        const timeDifference = now - lastChangeDate;
+        const hoursDifference = timeDifference / (1000 * 60 * 60);
+        if (hoursDifference < 24) {
+            document.querySelector('.cambiar-nombre').style.display = 'none';
+        }
+    }
 }
 
 // Evento de girar
@@ -126,6 +161,8 @@ document.getElementById('botonCambiarNombre').addEventListener('click', () => {
     const nuevoNombre = document.getElementById('nombreUsuario').value.trim();
     if (nuevoNombre) {
         agregarJugador(nuevoNombre, saldo);
+        localStorage.setItem('lastNameChange', new Date().toISOString());
+        document.querySelector('.cambiar-nombre').style.display = 'none';
     } else {
         mostrarAviso('Por favor, introduce un nombre válido.');
     }
