@@ -22,12 +22,13 @@ const provider = new GoogleAuthProvider();
 let userId = null;
 let saldo = 1000;
 let lastNameChange = null;
+let user = null;
 
 // Iniciar sesión con Google
 document.getElementById('botonLogin').addEventListener('click', async () => {
     try {
         const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+        user = result.user;
         console.log("Usuario autenticado:", user.displayName, user.email);
 
         userId = user.uid;
@@ -98,7 +99,7 @@ function girarCarretes() {
     }
     saldo -= 50;
     actualizarSaldo();
-    agregarJugador("Usuario", saldo);
+    agregarJugador(user.displayName || "Anónimo", saldo);
 
     botonGirar.disabled = true;
     mensaje.textContent = "Girando...";
@@ -112,6 +113,7 @@ function girarCarretes() {
             clearInterval(intervalo);
             determinarResultado();
             botonGirar.disabled = saldo <= 0;
+            mensaje.textContent = "¡Presiona 'Girar' para comenzar!";
         }
     }, 100);
 }
