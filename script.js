@@ -66,7 +66,7 @@ onAuthStateChanged(auth, async (user) => {
 document.getElementById('botonLogin').addEventListener('click', async () => {
     try {
         const result = await signInWithPopup(auth, provider);
-        user = result.user;
+        const user = result.user;
         userId = user.uid;
         const userDoc = await getDoc(doc(db, "ranking", userId));
         if (userDoc.exists()) {
@@ -222,4 +222,4 @@ document.getElementById('botonCambiarNombre').addEventListener('click', async ()
         } else {
             mostrarAviso('Saldo insuficiente para cambiar el nombre.');
         }
-    } else {
+    }
