@@ -27,6 +27,9 @@ let nombreCambiado = sessionStorage.getItem('nombreCambiado') === 'true';
 // Desactivar botón de girar antes de iniciar sesión
 document.getElementById('botonGirar').disabled = true;
 
+// Referencia al botón de cerrar sesión
+const botonCerrarSesion = document.getElementById('botonCerrarSesion');
+
 // Verificar el estado de autenticación
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -50,9 +53,12 @@ onAuthStateChanged(auth, async (user) => {
         } else {
             document.querySelector('.cambiar-nombre').style.display = 'none';
         }
+
+        botonCerrarSesion.style.display = 'block';
     } else {
         document.getElementById('botonLogin').style.display = 'block';
         document.querySelector('.cambiar-nombre').style.display = 'none';
+        botonCerrarSesion.style.display = 'none';
     }
 });
 
@@ -81,9 +87,22 @@ document.getElementById('botonLogin').addEventListener('click', async () => {
         } else {
             document.querySelector('.cambiar-nombre').style.display = 'none';
         }
+
+        botonCerrarSesion.style.display = 'block';
     } catch (error) {
         console.error("Error al iniciar sesión con Google:", error);
     }
+});
+
+// Evento de cerrar sesión
+botonCerrarSesion.addEventListener('click', () => {
+    auth.signOut().then(() => {
+        sessionStorage.clear();
+        localStorage.removeItem('nombreUsuario');
+        window.location.reload();
+    }).catch((error) => {
+        console.error('Error al cerrar sesión:', error);
+    });
 });
 
 // Actualizar saldo
@@ -204,6 +223,3 @@ document.getElementById('botonCambiarNombre').addEventListener('click', async ()
             mostrarAviso('Saldo insuficiente para cambiar el nombre.');
         }
     } else {
-        mostrarAviso('Por favor, introduce un nombre válido (sin caracteres especiales, máximo 20 caracteres).');
-    }
-});
