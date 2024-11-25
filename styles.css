@@ -182,6 +182,21 @@ body {
     box-shadow: 0 15px rgba(0, 0, 0, 0.4);
 }
 
+.boton-cerrar-sesion {
+    background-color: #f44336;
+    color: white;
+    font-size: 14px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.boton-cerrar-sesion:hover {
+    background-color: #d32f2f;
+}
+
 /* Estilos responsivos */
 @media (max-width: 768px) {
     .titulo {
