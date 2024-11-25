@@ -38,11 +38,13 @@ onAuthStateChanged(auth, async (user) => {
         if (userDoc.exists()) {
             saldo = userDoc.data().saldo;
             nombreCambiado = userDoc.data().nombreCambiado || nombreCambiado;
+            nombreUsuario = userDoc.data().nombre; // Asegurarse de recuperar el nombre guardado
         } else {
             await agregarJugador(user.displayName || "Anónimo", saldo);
+            nombreUsuario = user.displayName || "Anónimo";
         }
 
-        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName;
+        localStorage.setItem('nombreUsuario', nombreUsuario);
         actualizarSaldo();
         obtenerRanking();
         document.getElementById('botonLogin').style.display = 'none';
@@ -72,11 +74,13 @@ document.getElementById('botonLogin').addEventListener('click', async () => {
         if (userDoc.exists()) {
             saldo = userDoc.data().saldo;
             nombreCambiado = userDoc.data().nombreCambiado || nombreCambiado;
+            nombreUsuario = userDoc.data().nombre; // Asegurarse de recuperar el nombre guardado
         } else {
             await agregarJugador(user.displayName || "Anónimo", saldo);
+            nombreUsuario = user.displayName || "Anónimo";
         }
 
-        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName;
+        localStorage.setItem('nombreUsuario', nombreUsuario);
         actualizarSaldo();
         obtenerRanking();
         document.getElementById('botonLogin').style.display = 'none';
@@ -186,7 +190,7 @@ function determinarResultado() {
     const simbolo3 = carrete3.textContent;
 
     if (simbolo1 === simbolo2 && simbolo2 === simbolo3) {
-        const premio = 200;
+        const premio = 500;
         saldo += premio;
         mostrarAviso(`¡Felicidades! Ganaste ${premio}€`);
     } else {
@@ -218,7 +222,7 @@ document.getElementById('botonCambiarNombre').addEventListener('click', async ()
             await agregarJugador(nombreUsuario, saldo);
             localStorage.setItem('nombreUsuario', nombreUsuario);
             document.querySelector('.cambiar-nombre').style.display = 'none';
-            mostrarAviso('Nombre cambiado exitosamente. Esta acción solo se puede hacer una vez, hazlo bien.');
+            mostrarAviso('Nombre cambiado exitosamente.');
         } else {
             mostrarAviso('Saldo insuficiente para cambiar el nombre.');
         }
