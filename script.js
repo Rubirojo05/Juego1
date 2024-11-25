@@ -1,6 +1,6 @@
 // Firebase Configuración
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDoc, setDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"; // Añadir getDocs
+import { getFirestore, collection, query, orderBy, limit, getDoc, setDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -21,8 +21,8 @@ const provider = new GoogleAuthProvider();
 // Variables globales
 let userId = null;
 let saldo = 1500; // Establecer saldo inicial en 1.500€
-let nombreUsuario = null; // Añadir esta variable
-let nombreCambiado = false;
+let nombreUsuario = null;
+let nombreCambiado = sessionStorage.getItem('nombreCambiado') === 'true';
 
 // Desactivar botón de girar antes de iniciar sesión
 document.getElementById('botonGirar').disabled = true;
@@ -30,17 +30,16 @@ document.getElementById('botonGirar').disabled = true;
 // Verificar el estado de autenticación
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Usuario autenticado, no es necesario iniciar sesión de nuevo
         userId = user.uid;
         const userDoc = await getDoc(doc(db, "ranking", userId));
         if (userDoc.exists()) {
             saldo = userDoc.data().saldo;
-            nombreCambiado = userDoc.data().nombreCambiado || false;
+            nombreCambiado = userDoc.data().nombreCambiado || nombreCambiado;
         } else {
             await agregarJugador(user.displayName || "Anónimo", saldo);
         }
 
-        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName; // Recupera el nombre personalizado
+        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName;
         actualizarSaldo();
         obtenerRanking();
         document.getElementById('botonLogin').style.display = 'none';
@@ -52,7 +51,6 @@ onAuthStateChanged(auth, async (user) => {
             document.querySelector('.cambiar-nombre').style.display = 'none';
         }
     } else {
-        // Usuario no autenticado, mostrar botón de inicio de sesión
         document.getElementById('botonLogin').style.display = 'block';
         document.querySelector('.cambiar-nombre').style.display = 'none';
     }
@@ -63,18 +61,16 @@ document.getElementById('botonLogin').addEventListener('click', async () => {
     try {
         const result = await signInWithPopup(auth, provider);
         user = result.user;
-        console.log("Usuario autenticado:", user.displayName, user.email);
-
         userId = user.uid;
         const userDoc = await getDoc(doc(db, "ranking", userId));
         if (userDoc.exists()) {
             saldo = userDoc.data().saldo;
-            nombreCambiado = userDoc.data().nombreCambiado || false;
+            nombreCambiado = userDoc.data().nombreCambiado || nombreCambiado;
         } else {
             await agregarJugador(user.displayName || "Anónimo", saldo);
         }
 
-        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName; // Recupera el nombre personalizado
+        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName;
         actualizarSaldo();
         obtenerRanking();
         document.getElementById('botonLogin').style.display = 'none';
@@ -125,7 +121,6 @@ async function agregarJugador(nombre, saldo) {
 
     try {
         await setDoc(doc(db, "ranking", userId), { nombre, saldo, nombreCambiado }, { merge: true });
-        console.log("Jugador actualizado:", { nombre, saldo });
         obtenerRanking();
     } catch (error) {
         console.error("Error al guardar el jugador:", error);
@@ -146,8 +141,6 @@ function girarCarretes() {
     }
     saldo -= 50;
     actualizarSaldo();
-
-    // Utiliza la variable nombreUsuario
     agregarJugador(nombreUsuario || user.displayName || "Anónimo", saldo);
 
     botonGirar.disabled = true;
@@ -196,14 +189,15 @@ document.getElementById('botonGirar').addEventListener('click', girarCarretes);
 
 // Cambiar nombre
 document.getElementById('botonCambiarNombre').addEventListener('click', async () => {
-    nombreUsuario = document.getElementById('nombreUsuario').value.trim(); // Actualiza la variable nombreUsuario
+    nombreUsuario = document.getElementById('nombreUsuario').value.trim();
     if (nombreUsuario && !/[^a-zA-Z0-9]/.test(nombreUsuario) && nombreUsuario.length <= 20) {
         if (saldo >= 1000) {
             saldo -= 1000;
             actualizarSaldo();
             nombreCambiado = true;
+            sessionStorage.setItem('nombreCambiado', 'true');
             await agregarJugador(nombreUsuario, saldo);
-            localStorage.setItem('nombreUsuario', nombreUsuario); // Almacena el nombre personalizado
+            localStorage.setItem('nombreUsuario', nombreUsuario);
             document.querySelector('.cambiar-nombre').style.display = 'none';
             mostrarAviso('Nombre cambiado exitosamente. Esta acción solo se puede hacer una vez, hazlo bien.');
         } else {
