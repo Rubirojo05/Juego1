@@ -223,3 +223,4 @@ document.getElementById('botonCambiarNombre').addEventListener('click', async ()
             mostrarAviso('Saldo insuficiente para cambiar el nombre.');
         }
     }
+});
