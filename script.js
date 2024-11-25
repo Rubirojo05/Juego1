@@ -1,7 +1,7 @@
 // Firebase Configuración
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFirestore, collection, query, orderBy, limit, getDoc, setDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"; // Añadir getDocs
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyD2KJ0N0FksQJl658h-HdvkAO8CsLue1vw",
@@ -20,13 +20,41 @@ const provider = new GoogleAuthProvider();
 
 // Variables globales
 let userId = null;
-let saldo = 1000;
+let saldo = 1500; // Establecer saldo inicial en 1.500€
 let lastNameChange = null;
 let user = null;
 let nombreUsuario = null; // Añadir esta variable
 
 // Desactivar botón de girar antes de iniciar sesión
 document.getElementById('botonGirar').disabled = true;
+
+// Verificar el estado de autenticación
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Usuario autenticado, no es necesario iniciar sesión de nuevo
+        userId = user.uid;
+        const userDoc = await getDoc(doc(db, "ranking", userId));
+        if (userDoc.exists()) {
+            saldo = userDoc.data().saldo;
+        } else {
+            await agregarJugador(user.displayName || "Anónimo", saldo);
+        }
+
+        nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName; // Recupera el nombre personalizado
+        actualizarSaldo();
+        obtenerRanking();
+        document.getElementById('botonLogin').style.display = 'none';
+        document.querySelector('.cambiar-nombre').style.display = 'block';
+        document.getElementById('botonGirar').disabled = false;
+
+        lastNameChange = localStorage.getItem('lastNameChange') || null;
+        checkNameChangeAvailability();
+    } else {
+        // Usuario no autenticado, mostrar botón de inicio de sesión
+        document.getElementById('botonLogin').style.display = 'block';
+        document.querySelector('.cambiar-nombre').style.display = 'none';
+    }
+});
 
 // Iniciar sesión con Google
 document.getElementById('botonLogin').addEventListener('click', async () => {
@@ -42,7 +70,7 @@ document.getElementById('botonLogin').addEventListener('click', async () => {
         } else {
             await agregarJugador(user.displayName || "Anónimo", saldo);
         }
-        
+
         nombreUsuario = localStorage.getItem('nombreUsuario') || user.displayName; // Recupera el nombre personalizado
         actualizarSaldo();
         obtenerRanking();
@@ -85,8 +113,8 @@ async function obtenerRanking() {
 
 // Agregar jugador al ranking
 async function agregarJugador(nombre, saldo) {
-    if (!nombre || nombre.trim() === "") {
-        mostrarAviso("Por favor, introduce un nombre válido.");
+    if (!nombre || nombre.trim() === "" || /[^a-zA-Z0-9]/.test(nombre) || nombre.length > 20) {
+        mostrarAviso("Por favor, introduce un nombre válido (sin caracteres especiales, máximo 20 caracteres).");
         return;
     }
 
@@ -177,7 +205,7 @@ document.getElementById('botonGirar').addEventListener('click', girarCarretes);
 // Cambiar nombre
 document.getElementById('botonCambiarNombre').addEventListener('click', () => {
     nombreUsuario = document.getElementById('nombreUsuario').value.trim(); // Actualiza la variable nombreUsuario
-    if (nombreUsuario) {
+    if (nombreUsuario && !/[^a-zA-Z0-9]/.test(nombreUsuario) && nombreUsuario.length <= 20) {
         const now = new Date();
         const lastChangeDate = new Date(lastNameChange);
         const timeDifference = now - lastChangeDate;
@@ -195,6 +223,6 @@ document.getElementById('botonCambiarNombre').addEventListener('click', () => {
             mostrarAviso('Debes esperar 24 horas o tener 1.000€ para cambiar el nombre.');
         }
     } else {
-        mostrarAviso('Por favor, introduce un nombre válido.');
+        mostrarAviso('Por favor, introduce un nombre válido (sin caracteres especiales, máximo 20 caracteres).');
     }
 });
